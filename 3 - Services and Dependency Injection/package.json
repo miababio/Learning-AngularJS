@@ -1,0 +1,16 @@
+{
+  "name": "services-and-di",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/angular": "^1.6.39",
+    "@types/angular-resource": "^1.5.14"
+  }
+}

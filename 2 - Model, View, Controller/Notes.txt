@@ -1,0 +1,94 @@
+                                                        NOTES
+                                                        -----
+
+The Problem(s) AngularJS is Trying to Solve
+    - Ex: Bootstrap site, using jQuery (Step1 button, Step2 button...toggle)
+        - That's nice and all, but what if you had 20 steps? 50 steps?
+    - The problem is that you're constantly manipulating the DOM a lot
+    - We're doing a lot of management ourselves-and it can get messy
+    - Wouldn't it be great if we just had to change ONE side, and the other updates automagically?
+        - Update the HTML and the Javascript changes, and vice-versa?
+    - In comes Angular!
+        - Basically helps us manage all of this
+
+Model, View, Whatever...
+    - We have data on one side, and HTML on the other, and we want to be able to connect those somehow automatically
+    - This concept already exists (MVC, MVVM, etc.), but AngularJS uses something different
+    - Model View Whatever...
+        - Model -> The data
+        - View -> What the user interacts with (HTML)
+        - Whatever -> The thing that ties (binds) the Model and the View together
+            - This can be a Controller, View Model, or Whatever
+            - This is what does the automatic managing of data to view and vice-versa
+    - AngularJS calls it MV* (for model-view-whatever)
+
+HTML Aside: Custom Attributes
+    - Ex: <h1>Hello World</h1>
+    - I can add an attribute to this if I wanted (as you would expect)
+        - <h1 style="font-size: 8px;">Hello World</h1>
+    - I can add a custom attribute as well
+        - <h1 reply="Hello back!">Hello World</h1>
+        - When you run this, you'll notice that nothing changes (it still says Hello World)
+            - Since this is a custom attribute and not part of the HTML standard, it basically get overlooked and doesn't get represented visually
+            - It's still there in memory/in the DOM though 
+                - Ex: In jQuery or something, try console.log($("h1").attr("reply")); and run it in the browser
+                - If you look at the consolse window, it should say "Hello back!" as intended
+        - HTML5 actually has a standard for these attributes now called "data-"
+            - You write data-whatever_you_want and you can use that as an attribute
+                - Ex: <h1 data-reply="Hello back!">Hello World</h1>
+                      console.log($("h1").attr("data-reply")); // Should display the same thing
+                    - This is valid HTML5 code
+        - Angular doesn't follow this standard, but you cold use it if you wanted (prolly wont)
+            - Angular uses "ng-"
+            - You can think of "ng-" as a custom attribute for Angualar. They use the idea that the browser can see the attribute and then do something with it since it is visible
+            - <h1 ng-reply="Hello back!">Hello World</h1> 
+                - Note: Not that it'll matter for my purposes, but if you wanted to be HTML5 compliant, Angular does allow you to combine the format from both
+                    - Ex: <h1 data-ng-reply="Hello back!">Hello World</h1>
+
+Javascript Aside: The Global Namespace
+    - Ex: Let's say that I had in one file "mike.js" that had
+        - var person = "Mike"
+        - logPerson();
+      and another file "john.js" that had
+        - var person = "John"
+        - function logPerson() {console.log(person);}
+      and in an HTML file we had
+        - <script src="John.js"></script>
+        - <script src="Mike.js"></script>  
+
+      What do you think would happen if you opened the HTML file?
+        - The console shows "Mike"
+    
+    - But Why???
+        - So the "person" variable when ran gets put into the Global namespace. You can access it anywhere
+        - By the time logPerson() is called, "Mike" has already overridden the value inside person beforehand (John), so that's what gets displayed
+            - This can cause some messy situations, as well as hidden bugs
+    - To fix this, let's say John coould have written a namespace to keep things contained
+    - There are multiple ways to do this:
+        - 1. Create an object, and put everything you want in it
+            - Ex: var johnsApp = {};
+                  johnsApp.person = "John";
+                  johnsApp.logPerson = function() {console.log(johnsApp.person);}
+            - If I wanted to update it, in Mike's file, I'd do
+                - stevesApp.person = person;
+    
+Modules, Apps, and Controllers
+    - var myApp = angular.module("myApp", []);
+        - We want to tell Angular what view we want to use to control the Apps
+        - Ex: In index.html -> <html lang="en-us" ng-app="myApp">
+            - What this does is that everything contained within the <html> tag will now be connected to the myApp variable in the Global Namespace
+            - The variable you create (myApp in this case) and the name you give the module do NOT have to be the same
+                - The ng-app name and the module name have to be the SAME
+                - ng-app looks for the module name when you give it a name
+    - Everything we now add will be under the myApp variable, in order to not pollute the Global Namespace
+    - myApp.controller("mainController", function() {...});
+        - Here we create a controller, with code that will be associated with it when we use that name
+        - Remember, we're trying to connect the Model with the View 
+            - This is the Controller for the View
+        - With this controller, I can now go to index.html and type in
+            - <div ng-controller="mainController">
+                 <h1>Hello World</h1>  
+              </div>
+            - What this does is that now ng-app will look for a controller in myApp (the one in ng-app), and any code that inside the "mainController" in the HTML will be associated with the code in app.js
+            -  myApp.controller becomes the MODEL, and ng-controller becomes the VIEW
+                - Angular keeps these things connected/bound for you

@@ -1,0 +1,165 @@
+                                                        NOTES
+                                                        -----
+
+Javascript Aside: Dependency Injection
+    - Giving a function an object
+    - Instead of creating an object inside a function, you pass it into the function instead
+    - Pretty straightforward
+    - AngularJS uses Dependency Injection throughout its framework (controllers, etc.)
+
+The Scope Service
+    - Big part of binding the model to the view
+    - Involves DI
+
+    - var myApp = angular.module("myApp", []);
+
+      myApp.controller("mainController", function($scope) {
+          console.log($scope);
+      });
+
+        - What would you expect to happen if you ran this code?
+            - $scope isn't defined anywhere else in our code/files, so you think it would be empty
+        - When you run the code, looking in Console you can see that it isn't empty at all! It contains a bunch of various things in it
+            - This is Angular doing its Dependency Injection
+        - All that code in angular.js has $scope defined in there
+            - $scope is an object
+            - It has a '$' in front of the variable (does nothing special, it's more to help recognize that it's a service)
+                - All Angular services will have a '$' in front of the variable name
+        - So what Angular did was that it injected $scope into our function, becuase that's what we requested to be passed into the function 
+        - You can add properties to $scope as well (and view it in the Console too)
+            - Ex: $scope.name = "Michael"
+        - You can also add functions if you wanted (and call it in code later)
+            - Ex: $scope.getname = function() {return "Bob";}
+        - The Scope now becomes the "middle piece" between the view and the model
+            - It defines the data that will be passed back and forth between the model and the view
+
+Javascript Aside: Functions and Strings
+    - Long story short, let's say you had a function
+        - Ex: var searchPeople = function(firstName, lastName, age, occupation) {return "Jane Doe"}
+                - If you did console.log(searchPeople()), it would return "Jane Doe"
+                - If you did console.log(searchPeople, it would return a string representation of your function you wrote, verbatim
+                    - It's equivalent to writing searchPeople.toString()
+                    - This is important/powerful because you 
+                      could parse all the parameters and get the names of specific variables you wanted, as well as do a few other cool things
+                        - You can make a decision based on what you see
+                        - This is what Angular does
+
+How Does Angular Do Dependency Injection?
+    - console.log(angular.injector().annotate(searchPeople));
+        - If you look at the console, you get ["firstName", "lastName", "age", "occupation"]
+    - So using this injector() and annotate() methods, Angular was able to parse the parameters, and return an array containing each parameter as a string
+    - This means that if one of the parameters you pass in is a name Angular recognizes (ex: $Scope), then it can simply take that name, turn it into whatver it is,
+      and then replace (inject) that parameter with what it should be
+        - Ex: var searchPeople = function($scope, lastName, age, occupation) // $scope becomes the $scope Object
+    - Since it only tracks the name, it doesn't matter the order the parameters are in. So long as the name's there, it'll get it
+        - Ex: var searchPeople = function(firstName, lastName, age, $scope) // scope still gets translated here
+ 
+Getting Other Services
+    - Objects that Angular already recognizes
+    - Usually denoted by a '$'
+    - Ex: $log service
+        - Like console.log, but provided by Angular to do it safely, and add more features
+        - myApp.controller("mainController", function($scope, $log) {
+                console.log($scope); // shows the Scope Object
+                console.log($log);   // shows the Log Object
+          });
+        - What would happen if we swapped scope and log? -> function($log, $scope)
+            - The output would be the same!
+                - We use DI for each object, and Angular is reading each parameter and knows what object goes into what
+    - You can get any service you want, as long as you pass it as a parameter, thanks to Angular's DI
+    - Playing with $log
+        - $log.log("Hello");
+          $log.info("Here is some information");
+          $log.warn("Warning!");
+          $log.debug("Here is some debug info while I'm coding");
+          $log.error("There was an error!!");
+
+        - If you run this and check console, you can see all the different logging styles for each one
+        - NOTE: debug does NOT show up unless in Chrome, you switch "Default Levels" to "All Levels"
+            - Click it and check the 'Verbose' option as well
+    - Playing with $filter
+        - Used for formatting data displayed to the user
+        - Ex: myApp.controller("mainController", function($scope, $log, $filter) {
+                  $scope.name = 'John';
+                  $scope.formattedName = $filter('uppercase')($scope.name); // converts the name to uppercase (obviously)
+                  $log.info($scope.name);           // Displays 'john'
+                  $log.info($scope.formattedName);  // Displays 'JOHN'
+              });
+    - There's a whole ecosystem of services that Angular can use, that don't necessarily have to come from the main AngularJS file 
+        - If you go to AngularJS's website and go to Download, then click on your version, you'll see abunch of other Angular files you can download (angular-messages, etc.)
+            - These files contain services
+            - If you look at the docs in these files, you'll notices that all services from these files have their modules named "ng<name_of_service>"
+                - Ex: ngMessages, ngResource, etc.
+                    - NOTE: NOT ALL services have this naming convention!! You'll have to look at the files to see how they're named/used for some of them
+        - Ex: Added angular-messages.min.js file to project
+            - We can't use it right away-we first need to tell Angular that we want to use that service, but how?
+            - Remember when we made our own module? -> var myApp = angular.module("myApp", []);
+                - We gave the module a name ('myApp'), and then we said the second argument was an array containing the module's dependencies; What does that mean?
+                    - What we put there is a list of modules that myApp uses or depends on
+                    - So if I wanted to use ngMessages, then I would include it in the array, as well as any other module I wanted
+                        - Need to put them in as Strings
+                    - Ex: var myApp = angular.module("myApp", ['ngMessages']);
+                        - With that, we can start using it
+                        - See Example 1
+                            - If you notice, we use the 'ng-messages' directive/custom attribute
+                                - We can use it becuase we included ngMessages in myApp, and ng-messages is within the mainController, which is a part of myApp
+    - ngResource
+        - Gives a nice way of grabbing data from the internet (RESTful Services)
+        - Looking at the actual file, you can see that it gives us a $resource service we can use
+
+Javascript Aside: Arrays and Functions
+    - In Javascript, you can have arrays of mixed types
+        - var things = [1, '2', 3];
+    - You can also have functions in arrays
+        - var things = [1, 
+                        '2', 
+                        function() {
+                            alert('Hello!');
+                        }];
+
+            - If you did a console.log, you'd get -> [1, '2', function]
+        - If you wanted to call the function, you would just do things[2]();
+
+Dependency Injection and Minification
+    - Another way Angular does Dependency Injection
+    - Minification: Shrinking the size of files for faster download
+    - If you take 
+
+        var myApp = angular.module("myApp", []);
+
+        myApp.controller("mainController", function($scope, $log) {
+            $log.info($scope);
+        });
+
+      and minify it, you get the following code -> var myApp=angular.module("myApp",[]);myApp.controller("mainController",function(n,o){o.info(n)});
+        - It removed all of the spaces, characters, etc., making it faster/smaller
+        - A good minifier will also take the variable names, and shrink them to the smallest name possible, usually a single letter
+    - If you tried to run the minified code instead, what do you think happens?
+        - You get an [$injector:unpr] error (Injector error)! It can't find our minified variables...why?
+            - 
+
+
+
+
+
+
+                                        EXAMPLES
+                                        --------
+
+Example 1 - ngMessages -> Form Validation
+---------
+<div class="container">
+    <div ng-controller="mainController">
+        <form name="myForm">
+            <label>
+            Enter text:
+            <input type="email" ng-model="field" name="myField" required maxlength="15" />
+            </label>
+            <div ng-messages="myForm.myField.$error" role="alert">
+                <div ng-message="required">Please enter a value for this field.</div>
+                <div ng-message="email">This field must be a valid email address.</div>
+                <div ng-message="maxlength">This field can be at most 15 characters long.</div>
+            </div>
+        </form>
+    </div>
+</div> 
