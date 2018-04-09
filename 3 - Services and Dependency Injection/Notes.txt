@@ -25,7 +25,7 @@ The Scope Service
             - $scope is an object
             - It has a '$' in front of the variable (does nothing special, it's more to help recognize that it's a service)
                 - All Angular services will have a '$' in front of the variable name
-        - So what Angular did was that it injected $scope into our function, becuase that's what we requested to be passed into the function 
+        - So what Angular did was that it injected $scope into our function, because that's what we requested to be passed into the function 
         - You can add properties to $scope as well (and view it in the Console too)
             - Ex: $scope.name = "Michael"
         - You can also add functions if you wanted (and call it in code later)
@@ -48,7 +48,7 @@ How Does Angular Do Dependency Injection?
     - console.log(angular.injector().annotate(searchPeople));
         - If you look at the console, you get ["firstName", "lastName", "age", "occupation"]
     - So using this injector() and annotate() methods, Angular was able to parse the parameters, and return an array containing each parameter as a string
-    - This means that if one of the parameters you pass in is a name Angular recognizes (ex: $Scope), then it can simply take that name, turn it into whatver it is,
+    - This means that if one of the parameters you pass in is a name Angular recognizes (ex: $Scope), then it can simply take that name, turn it into whatever it is,
       and then replace (inject) that parameter with what it should be
         - Ex: var searchPeople = function($scope, lastName, age, occupation) // $scope becomes the $scope Object
     - Since it only tracks the name, it doesn't matter the order the parameters are in. So long as the name's there, it'll get it
@@ -86,7 +86,7 @@ Getting Other Services
                   $log.info($scope.formattedName);  // Displays 'JOHN'
               });
     - There's a whole ecosystem of services that Angular can use, that don't necessarily have to come from the main AngularJS file 
-        - If you go to AngularJS's website and go to Download, then click on your version, you'll see abunch of other Angular files you can download (angular-messages, etc.)
+        - If you go to AngularJS's website and go to Download, then click on your version, you'll see a bunch of other Angular files you can download (angular-messages, etc.)
             - These files contain services
             - If you look at the docs in these files, you'll notices that all services from these files have their modules named "ng<name_of_service>"
                 - Ex: ngMessages, ngResource, etc.
@@ -102,7 +102,7 @@ Getting Other Services
                         - With that, we can start using it
                         - See Example 1
                             - If you notice, we use the 'ng-messages' directive/custom attribute
-                                - We can use it becuase we included ngMessages in myApp, and ng-messages is within the mainController, which is a part of myApp
+                                - We can use it because we included ngMessages in myApp, and ng-messages is within the mainController, which is a part of myApp
     - ngResource
         - Gives a nice way of grabbing data from the internet (RESTful Services)
         - Looking at the actual file, you can see that it gives us a $resource service we can use
@@ -136,7 +136,39 @@ Dependency Injection and Minification
         - A good minifier will also take the variable names, and shrink them to the smallest name possible, usually a single letter
     - If you tried to run the minified code instead, what do you think happens?
         - You get an [$injector:unpr] error (Injector error)! It can't find our minified variables...why?
-            - 
+            - Remember how AngularJS does dependency injection. It looks through the list of parameters as a string, and tries to find a certain name
+                - So when the minifier did it's thing and renamed the variables, it broke AngularJS's dependency injection
+        - So what do we do about this?
+            - Luckily, AngularJS has a second method that can be used, for cases like this-when you minify code
+            - When you are creating a controller, you can pass in an array as a second argument
+                - Ex: myApp.controller("mainController", ['$scope', '$log', function($scope, $log) {
+                          $log.info($scope);
+                      }]); 
+                      - Remember that arrays can save different types in them
+                      - Note: The function that defines the controller is ALWAYS the last thing in the array
+                      - Note: The elements that are before the function in the array, should match the elements that are passed into the function
+                - Now, if we minify this code, we get -> myApp.controller("mainController",["$scope","$log",function(o,n){n.info(o)}]);
+                    - Minifiers will NEVER change the value inside a string, which is why they are still "$scope" and "$log"
+                    - With this method of DI, Angular now decides to look at the first arguments in the array first, read the names, and then determine what objects are needed, and then
+                      pass that information to the function
+                    - What happens when we run the code now?
+                        - Everything works as before, and you still get $scope logged to the console
+                - So between the two methods, there are some differences
+                    - When using the second method (array), since the function looks at the name/position of the arguments in the array, and then applies that same positioning in the function's
+                      arguments, what happens if we switch the $scope and $log positions?
+                        - Ex: myApp.controller("mainController", ['$scope', '$log', function($log, $scope) {
+                                  $log.info($scope);
+                              }]);
+                            - We get an error! ($log.info is not a function) -> Why?
+                                - If we change -> $log.info($scope); -> to console.log($scope); in order to see $scope's information, we see this
+                                    - {log: ƒ, info: ƒ, warn: ƒ, error: ƒ, debug: ƒ} // Object
+                                        - This is the Log Object! - Why?
+                                            - Remember, this version of the controller looks at the arguments in the array FIRST, not the parameters in the function, and passes
+                                              them to the function parameters accordingly, based on position
+                                                - So in this case, in the function parameters, $log = "$scope" and $scope = "$log"
+                                                - In other words: ORDER MATTERS
+
+
 
 
 
