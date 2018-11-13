@@ -2,6 +2,32 @@
                                                         -----
 
 Scope and Interpolation
+    - Interpolation: Creating a string by combining strings and placeholders
+        - Ex: 'My name is ' + name is interpolated, and results to 'My name is Michael'
+    - How does interpolation work in AngularJS?
+        - Right now we have <h1>Hello World</h1> in index.html. Let's say I wanted to replace "World" with "Michael"
+            - Problem -> It is in the HTML!
+            - Solution: AngularJS to the rescue!
+                - We have a controller watching everything inside of it (mainController)
+                - Remember that we have a model, a view, and something in between that interacts between the two (that's $scope!)
+
+                - myApp.controller('mainController', ['$scope', function($scope) {
+                      $scope.name = 'Michael';
+                  }]);
+
+                    - We can add data to the $scope, be it value or function, and it will be available in the HTML, via interpolation
+                    - One way of interpolating in the HTML is to use curly braces like so -> {{ <variable_name_on_scope> }}
+                    - Now, it looks like this -> <h1>Hello {{name}}!</h1>
+                    - Anything you put on the $scope can be assumed that it will be available on the view
+                    - You don't need to put $scope.name either, just name, since it will be assumed it's on the $scope object already
+        - If you inspect the text in Chrome, you'll see it still looks like <h1>Hello {{name + '. How are you?'}}!</h1>
+        - This means that the code gets downloaded like we made it, but the Angular runs and interpolates our code, and changes the value in browser memory
+    - Cooler, more powerful Example
+        - See Example 1
+            - With this, all we did was add a timeout of three seconds, and changed the variable name, and you can see that Michael changed to Everybody
+            - Angular connects the $scope to the view, so when the variable changed, it changed the view automatically
+
+Directives and Two Way Data Binding
     - 
    
 
@@ -12,8 +38,30 @@ Scope and Interpolation
 
 
 
-                                        EXAMPLES
-                                        --------
+                                                    EXAMPLES
+                                                    --------
 
-Example 1 - 
+Example 1 - Interpolation
+---------
+    app.js
+    ======
+    var myApp = angular.module('myApp', []);
+
+    myApp.controller('mainController', ['$scope', '$timeout', function($scope, $timeout) {
+        $scope.name = 'Michael';
+        $timeout(function() {
+            $scope.name = 'Everybody';
+        }, 3000);
+    }]);
+
+    index.html
+    ==========
+    <div class="container">
+        <div ng-controller="mainController">
+            <h1>Hello {{name + '. How are you?'}}!</h1>
+        </div>
+    </div>
+
+
+Example 2 - 
 ---------
